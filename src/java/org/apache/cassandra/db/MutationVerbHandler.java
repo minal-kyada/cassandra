@@ -17,11 +17,15 @@
  */
 package org.apache.cassandra.db;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.apache.cassandra.exceptions.WriteTimeoutException;
 import org.apache.cassandra.locator.InetAddressAndPort;
 import org.apache.cassandra.net.ForwardingInfo;
 import org.apache.cassandra.net.Message;
 import org.apache.cassandra.net.MessagingService;
+import org.apache.cassandra.net.NoPayload;
 import org.apache.cassandra.net.ParamType;
 import org.apache.cassandra.tracing.Tracing;
 
@@ -32,17 +36,21 @@ import static org.apache.cassandra.utils.MonotonicClock.Global.approxTime;
 public class MutationVerbHandler extends AbstractMutationVerbHandler<Mutation>
 {
     public static final MutationVerbHandler instance = new MutationVerbHandler();
+    private static final Logger logger = LoggerFactory.getLogger(MutationVerbHandler.class);
 
     private void respond(Message<?> respondTo, InetAddressAndPort respondToAddress)
     {
         Tracing.trace("Enqueuing response to {}", respondToAddress);
-        MessagingService.instance().send(respondTo.emptyResponse(), respondToAddress);
+        Message<NoPayload> reply = respondTo.emptyResponse();
+        reply = MessageParams.addToMessage(reply);
+        MessagingService.instance().send(reply, respondToAddress);
     }
 
     private void failed()
     {
         Tracing.trace("Payload application resulted in WriteTimeout, not replying");
     }
+
 
     public void doVerb(Message<Mutation> message)
     {
@@ -54,6 +62,8 @@ public class MutationVerbHandler extends AbstractMutationVerbHandler<Mutation>
         }
 
         message.payload.validateSize(MessagingService.current_version, ENTRY_OVERHEAD_SIZE);
+
+        WriteThresholds.checkWriteThresholds(message.payload);
 
         // Check if there were any forwarding headers in this message
         ForwardingInfo forwardTo = message.forwardTo();

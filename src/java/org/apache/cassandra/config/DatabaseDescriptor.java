@@ -5437,6 +5437,42 @@ public class DatabaseDescriptor
         conf.row_index_read_size_fail_threshold = value;
     }
 
+    // Write warning thresholds
+
+    public static boolean getWriteThresholdsEnabled()
+    {
+        return conf.write_thresholds_enabled;
+    }
+
+    public static void setWriteThresholdsEnabled(boolean enabled)
+    {
+        logger.info("updating write_thresholds_enabled to {}", enabled);
+        conf.write_thresholds_enabled = enabled;
+    }
+
+    @Nullable
+    public static DataStorageSpec.LongBytesBound getWriteSizeWarnThreshold()
+    {
+        return conf.write_size_warn_threshold;
+    }
+
+    public static void setWriteSizeWarnThreshold(@Nullable DataStorageSpec.LongBytesBound value)
+    {
+        logger.info("updating write_size_warn_threshold to {}", value);
+        conf.write_size_warn_threshold = value;
+    }
+
+    public static int getWriteTombstoneWarnThreshold()
+    {
+        return conf.write_tombstone_warn_threshold;
+    }
+
+    public static void setWriteTombstoneWarnThreshold(int threshold)
+    {
+        logger.info("updating write_tombstone_warn_threshold to {}", Math.max(threshold, 0));
+        conf.write_tombstone_warn_threshold = Math.max(threshold, 0);
+    }
+
     public static int getDefaultKeyspaceRF()
     {
         return conf.default_keyspace_rf;

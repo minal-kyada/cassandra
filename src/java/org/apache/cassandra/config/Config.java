@@ -583,6 +583,11 @@ public class Config
     public volatile int tombstone_warn_threshold = 1000;
     public volatile int tombstone_failure_threshold = 100000;
 
+    // Write warning thresholds (replica-side checks using TopPartitionTracker estimates)
+    public volatile boolean write_thresholds_enabled = false;
+    public volatile DataStorageSpec.LongBytesBound write_size_warn_threshold = null;
+    public volatile int write_tombstone_warn_threshold = 0;
+
     public TombstonesMetricGranularity tombstone_read_purgeable_metric_granularity = TombstonesMetricGranularity.disabled;
 
     public final ReplicaFilteringProtectionOptions replica_filtering_protection = new ReplicaFilteringProtectionOptions();
